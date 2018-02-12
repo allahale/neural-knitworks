@@ -1,0 +1,11 @@
+export JOB_NAME="gen_3layer_$(date +%Y%m%d_%H%M%S)"
+export JOB_DIR=gs://$BUCKET_NAME/$JOB_NAME
+
+gcloud ml-engine local train \
+--module-name model_training.generate \
+--package-path ./model_training \
+-- \
+--data-file gs://neural-knitworks/processed_arrays.npy \
+--job-dir gs://$BUCKET_NAME/$JOB_NAME \
+--model-file gs://neural-knitworks/punch_rnn_train_LSTM_3Layer_RMSprop_20180209_234452/model.h5 \
+--n_examples 3 \

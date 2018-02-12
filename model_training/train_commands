@@ -1,0 +1,51 @@
+export BUCKET_NAME=neural-knitworks
+export REGION=us-east1
+export LOG_DIR=gs://$BUCKET_NAME/logs
+
+gcloud ml-engine local train \
+--module-name model_training.train \
+--package-path ./model_training \
+-- \
+--train-file gs://neural-knitworks/processed_arrays.npy \
+--job-dir gs://$BUCKET_NAME/$JOB_NAME \
+--log-dir $LOG_DIR \
+--batch_size 64 \
+--epochs 2 \
+--lr-decay 1e-6 \
+--rnn_layers 2 \
+--test True
+
+
+export JOB_NAME="punch_rnn_train_LSTM_1Layer_RMSprop_$(date +%Y%m%d_%H%M%S)"
+export JOB_DIR=gs://$BUCKET_NAME/$JOB_NAME
+
+gcloud ml-engine jobs submit training $JOB_NAME \
+--job-dir gs://$BUCKET_NAME/$JOB_NAME \
+--module-name model_training.train \
+--package-path ./model_training \
+--region $REGION \
+--config=model_training/cloudml-gpu.yaml \
+-- \
+--train-file gs://neural-knitworks/processed_arrays.npy \
+--job-dir gs://neural-knitworks/train \
+--log-dir $LOG_DIR \
+--batch_size 64 \
+--epochs 1000
+
+
+export JOB_NAME="punch_rnn_train_LSTM_3Layer_RMSprop_$(date +%Y%m%d_%H%M%S)"
+export JOB_DIR=gs://$BUCKET_NAME/$JOB_NAME
+
+gcloud ml-engine jobs submit training $JOB_NAME \
+--job-dir gs://$BUCKET_NAME/$JOB_NAME \
+--module-name model_training.train \
+--package-path ./model_training \
+--region $REGION \
+--config=model_training/cloudml-gpu.yaml \
+-- \
+--train-file gs://neural-knitworks/processed_arrays.npy \
+--job-dir gs://neural-knitworks/train \
+--log-dir $LOG_DIR \
+--batch_size 64 \
+--rnn_layers 3 \
+--epochs 1000
